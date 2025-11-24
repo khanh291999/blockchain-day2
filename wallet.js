@@ -134,6 +134,12 @@ function signMessage() {
             return;
         }
         
+        // Validate private key format (64 hex characters)
+        if (!/^[0-9a-fA-F]{64}$/.test(privateKeyHex)) {
+            showToast('❌ Private key không hợp lệ! Phải có đúng 64 ký tự hex (0-9, a-f)', 'error');
+            return;
+        }
+        
         if (!message) {
             showToast('⚠️ Vui lòng nhập nội dung giao dịch!', 'error');
             return;
@@ -146,6 +152,22 @@ function signMessage() {
         } catch (e) {
             showToast('⚠️ Nội dung phải là JSON hợp lệ!', 'error');
             return;
+        }
+        
+        // Validate địa chỉ Ethereum trong transaction
+        if ('to' in messageObj) {
+            if (!messageObj.to || !/^0x[0-9a-fA-F]{40}$/.test(messageObj.to)) {
+                showToast('❌ Địa chỉ "to" không hợp lệ! Phải có định dạng: 0x + 40 ký tự hex (vd: 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb4)', 'error');
+                return;
+            }
+        }
+        
+        // Validate amount nếu có
+        if (messageObj.amount !== undefined) {
+            if (typeof messageObj.amount !== 'number' || messageObj.amount <= 0) {
+                showToast('❌ Amount phải là số dương!', 'error');
+                return;
+            }
         }
         
         // Tạo key pair từ private key
@@ -203,12 +225,33 @@ function verifySignature() {
             return;
         }
         
+        // Validate public key format (130 hex characters for uncompressed key with 04 prefix)
+        if (!/^04[0-9a-fA-F]{128}$/.test(publicKeyHex) && !/^[0-9a-fA-F]{128}$/.test(publicKeyHex)) {
+            showToast('❌ Public key không hợp lệ! Phải có 128 hoặc 130 ký tự hex', 'error');
+            return;
+        }
+        
+        // Validate signature format (DER encoded signature in hex)
+        if (!/^[0-9a-fA-F]+$/.test(signatureHex) || signatureHex.length < 64) {
+            showToast('❌ Signature không hợp lệ! Phải là chuỗi hex hợp lệ', 'error');
+            return;
+        }
+        
         // Kiểm tra JSON hợp lệ
+        let messageObj;
         try {
-            JSON.parse(message);
+            messageObj = JSON.parse(message);
         } catch (e) {
             showToast('⚠️ Nội dung phải là JSON hợp lệ!', 'error');
             return;
+        }
+        
+        // Validate địa chỉ Ethereum trong message
+        if ('to' in messageObj) {
+            if (!messageObj.to || !/^0x[0-9a-fA-F]{40}$/.test(messageObj.to)) {
+                showToast('❌ Địa chỉ "to" không hợp lệ! Phải có định dạng: 0x + 40 ký tự hex', 'error');
+                return;
+            }
         }
         
         // Tạo key pair từ public key
@@ -363,14 +406,14 @@ document.getElementById('verifyPublicKey').addEventListener('focus', function() 
 
 // Example transaction for demo
 document.getElementById('messageToSign').value = JSON.stringify({
-    "to": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+    "to": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb4",
     "amount": 5,
     "currency": "ETH",
     "timestamp": Date.now()
 }, null, 2);
 
 document.getElementById('messageToVerify').value = JSON.stringify({
-    "to": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
+    "to": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb4",
     "amount": 5,
     "currency": "ETH",
     "timestamp": Date.now()
@@ -387,6 +430,12 @@ function importWallet() {
         
         if (!privateKeyHex) {
             showToast('⚠️ Vui lòng nhập private key!', 'error');
+            return;
+        }
+        
+        // Validate private key format (64 hex characters)
+        if (!/^[0-9a-fA-F]{64}$/.test(privateKeyHex)) {
+            showToast('❌ Private key không hợp lệ! Phải có đúng 64 ký tự hex (0-9, a-f)', 'error');
             return;
         }
         
@@ -500,6 +549,19 @@ function batchSign() {
         lines.forEach((line, index) => {
             try {
                 const messageObj = JSON.parse(line);
+                
+                // Validate địa chỉ Ethereum
+                if ('to' in messageObj) {
+                    if (!messageObj.to || !/^0x[0-9a-fA-F]{40}$/.test(messageObj.to)) {
+                        throw new Error(`Địa chỉ "to" không hợp lệ! Phải có định dạng: 0x + 40 ký tự hex`);
+                    }
+                }
+                
+                // Validate amount
+                if (messageObj.amount !== undefined && (typeof messageObj.amount !== 'number' || messageObj.amount <= 0)) {
+                    throw new Error('Amount phải là số dương!');
+                }
+                
                 const messageHash = sha256(line);
                 const signature = keyPair.sign(messageHash);
                 const signatureHex = signature.toDER('hex');
