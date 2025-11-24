@@ -2,6 +2,9 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Wallet - Blockchain Security</title>
     <link rel="stylesheet" href="styles.css">
@@ -195,7 +198,13 @@
                     </div>
                     <div class="form-group">
                         <label>Nội dung giao dịch (JSON):</label>
-                        <textarea id="messageToSign" class="textarea-field" rows="4" placeholder='{"to": "0x123...", "amount": 5, "currency": "ETH"}'></textarea>
+                        <textarea id="messageToSign" class="textarea-field" rows="6" placeholder='{"to": "0x123...", "amount": 5, "currency": "ETH"}'>
+{
+  "to": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb4",
+  "amount": 5,
+  "currency": "ETH",
+  "timestamp": 1763984715021
+}</textarea>
                     </div>
                     <button class="action-button primary" onclick="signMessage()">
                         <span class="button-icon">✍️</span>
@@ -236,7 +245,13 @@
                     </div>
                     <div class="form-group">
                         <label>Nội dung giao dịch (JSON):</label>
-                        <textarea id="messageToVerify" class="textarea-field" rows="4" placeholder='{"to": "0x123...", "amount": 5, "currency": "ETH"}'></textarea>
+                        <textarea id="messageToVerify" class="textarea-field" rows="6" placeholder='{"to": "0x123...", "amount": 5, "currency": "ETH"}'>
+{
+  "to": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb4",
+  "amount": 5,
+  "currency": "ETH",
+  "timestamp": 1763984715021
+}</textarea>
                     </div>
                     <div class="form-group">
                         <label>Signature:</label>
